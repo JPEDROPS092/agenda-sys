@@ -1,0 +1,83 @@
+version: "3"
+
+services:
+  backend:
+    build:
+      context: ./agendas-api
+      dockerfile: Dockerfile
+    volumes:
+      - ./agendas-api:/app
+      - backend_data:/app/data
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - SECRET_KEY=django-insecure-%&5ltq@gu89itaj&#_3xv%g7p%qtx7i2yk2ccv^%9%0mi9x#v1
+      - DEBUG=True
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        python manage.py populate_agenda &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./agendas-frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./agendas-frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NUXT_PUBLIC_API_BASE=http://localhost:8000/api
+      - NUXT_HOST=0.0.0.0
+      - NUXT_PORT=3000
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+    restart: unless-stopped
+
+  utils:
+    image: node:alpine
+    depends_on:
+      - backend
+      - frontend
+    network_mode: "host"
+    command: >
+      sh -c "
+        echo 'Instalando dependências...' &&
+        npm install -g qrcode-terminal &&
+        echo 'Aguardando serviços iniciarem...' &&
+        sleep 15 &&
+        IP=$$(hostname -I | awk '{print $$1}') &&
+        [ -z \"$$IP\" ] && IP='localhost' &&
+        echo '' &&
+        echo '==================================' &&
+        echo '🌐 ACESSE A APLICAÇÃO NOS LINKS E QR CODES' &&
+        echo '==================================' &&
+        echo '⚠️ IMPORTANTE: Seu telefone precisa estar na mesma rede Wi-Fi!' &&
+        echo '==================================' &&
+        echo '' &&
+        echo '📱 Frontend: http://'"$$IP"':3000' &&
+        qrcode-terminal 'http://'"$$IP"':3000' &&
+        echo '' &&
+        echo '⚙️ Backend API: http://'"$$IP"':8000/api/' &&
+        qrcode-terminal 'http://'"$$IP"':8000/api/' &&
+        echo '' &&
+        echo '📚 Swagger: http://'"$$IP"':8000/swagger/' &&
+        qrcode-terminal 'http://'"$$IP"':8000/swagger/' &&
+        echo '' &&
+        echo '📖 Redoc: http://'"$$IP"':8000/redoc/' &&
+        qrcode-terminal 'http://'"$$IP"':8000/redoc/' &&
+        echo '' &&
+        echo '==================================' &&
+        echo '🔄 Os QR codes acima usam seu IP real: '"$$IP"'' &&
+        echo '==================================' &&
+        tail -f /dev/null
+      "
+
+volumes:
+  backend_data:
