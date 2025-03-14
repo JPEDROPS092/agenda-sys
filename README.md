@@ -151,8 +151,8 @@ A maneira mais simples e rápida de executar o projeto é usando o Docker Compos
    docker-compose up --build
    ```
 
-   Este comando mágico faz o seguinte:
-
+   * Use `--build` quando quiser garantir que todas as alterações nos arquivos de build sejam aplicadas
+   * Use `-d` quando quiser que os contêineres rodem em segundo plano, sem ocupar seu terminal
    * **`docker-compose up`:**  Inicia os serviços definidos no arquivo `docker-compose.yml` (backend, frontend, banco de dados e um serviço especial para abrir o navegador).
    * **`--build`:**  Constrói as imagens Docker do backend e do frontend *antes* de iniciar os containers.  Use este argumento sempre que você modificar o código ou as dependências (arquivos `Dockerfile`, `requirements.txt` ou `package.json`).
    * O Docker Compose se encarregará de baixar as imagens base (Python, Node.js), instalar as dependências, executar as migrações do Django, popular o banco de dados e iniciar os servidores.  Tudo de forma automática!
@@ -207,13 +207,19 @@ Se você preferir executar o projeto *diretamente* na sua máquina (sem Docker),
 
    Este comando aplica as migrações do Django, criando as tabelas necessárias no banco de dados SQLite.
 6. **Popule o Banco de Dados (Opcional):**
+   no modo  de containers  já executa esse comando
 
    ```bash
    python manage.py populate_agenda
    ```
 
    Este comando executa o script `populate_agenda.py`, que usa a biblioteca Faker para criar dados de teste realistas e preencher o banco de dados.  Isso é útil para testar a aplicação.
-7. **Inicie o Servidor de Desenvolvimento:**
+   Ex: 2
+
+   ```bash
+   python manage.py populate_agenda 50 // Inserir 50 tuplas de dados 
+   ```
+9. **Inicie o Servidor de Desenvolvimento:**
 
    ```bash
    python manage.py runserver

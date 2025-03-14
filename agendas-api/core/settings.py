@@ -61,17 +61,10 @@ CORS_ALLOWED_ORIGINS = [
 # Configuração do DRF
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-    'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S.%fZ",
-    'DATETIME_INPUT_FORMATS': [
-        "%Y-%m-%dT%H:%M:%S.%fZ",
-        "%Y-%m-%dT%H:%M:%SZ",
-        "%Y-%m-%dT%H:%M:%S",
-        "%Y-%m-%d %H:%M:%S",
-    ],
 }
 
 ROOT_URLCONF = "core.urls"
@@ -101,7 +94,7 @@ WSGI_APPLICATION = "core.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),  
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 # Password validation
@@ -126,14 +119,12 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "pt-br"  # Use Brazilian Portuguese
+LANGUAGE_CODE = "pt-br"  
 
-TIME_ZONE = "America/Sao_Paulo"  # Use a specific timezone
-
+TIME_ZONE = "UTC"  
 USE_I18N = True
 
-USE_TZ = True  # Enable timezone support
-
+USE_TZ = True  
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

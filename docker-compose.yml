@@ -40,42 +40,32 @@ services:
     command: npm run dev -- --host 0.0.0.0
     restart: unless-stopped
 
-  utils:
-    image: node:alpine
+  access_links:
+    image: alpine:latest
     depends_on:
       - backend
       - frontend
-    network_mode: "host"
     command: >
       sh -c "
-        echo 'Instalando dependências...' &&
-        npm install -g qrcode-terminal &&
-        echo 'Aguardando serviços iniciarem...' &&
-        sleep 15 &&
-        IP=$$(hostname -I | awk '{print $$1}') &&
-        [ -z \"$$IP\" ] && IP='localhost' &&
+        apk add --no-cache curl &&
+        echo '╔═════════════════════════════════════════════════════════════╗' &&
+        echo '║                AGENDA SYSTEM - INFORMAÇÕES                  ║' &&
+        echo '╠═════════════════════════════════════════════════════════════╣' &&
+        echo '║                                                             ║' &&
+        echo '║  ✨ APLICAÇÃO INICIADA COM SUCESSO!                         ║' &&
+        echo '║                                                             ║' &&
+        echo '║  📱 Frontend: http://localhost:3000                         ║' &&
+        echo '║  ⚙️ API: http://localhost:8000/api/                          ║' &&
+        echo '║  📚 Swagger: http://localhost:8000/swagger/                 ║' &&
+        echo '║  📖 Redoc: http://localhost:8000/redoc/                     ║' &&
+        echo '║                                                             ║' &&
+        echo '║  ❓ Problemas com requisições PUT/POST?                     ║' &&
+        echo '║  Certifique-se de enviar datas no formato:                  ║' &&
+        echo '║  YYYY-MM-DDThh:mm:ssZ (exemplo: 2025-03-14T15:30:00Z)       ║' &&
+        echo '║                                                             ║' &&
+        echo '╚═════════════════════════════════════════════════════════════╝' &&
+        echo 'Logs do sistema abaixo:' &&
         echo '' &&
-        echo '==================================' &&
-        echo '🌐 ACESSE A APLICAÇÃO NOS LINKS E QR CODES' &&
-        echo '==================================' &&
-        echo '⚠️ IMPORTANTE: Seu telefone precisa estar na mesma rede Wi-Fi!' &&
-        echo '==================================' &&
-        echo '' &&
-        echo '📱 Frontend: http://'"$$IP"':3000' &&
-        qrcode-terminal 'http://'"$$IP"':3000' &&
-        echo '' &&
-        echo '⚙️ Backend API: http://'"$$IP"':8000/api/' &&
-        qrcode-terminal 'http://'"$$IP"':8000/api/' &&
-        echo '' &&
-        echo '📚 Swagger: http://'"$$IP"':8000/swagger/' &&
-        qrcode-terminal 'http://'"$$IP"':8000/swagger/' &&
-        echo '' &&
-        echo '📖 Redoc: http://'"$$IP"':8000/redoc/' &&
-        qrcode-terminal 'http://'"$$IP"':8000/redoc/' &&
-        echo '' &&
-        echo '==================================' &&
-        echo '🔄 Os QR codes acima usam seu IP real: '"$$IP"'' &&
-        echo '==================================' &&
         tail -f /dev/null
       "
 

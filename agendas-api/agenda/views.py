@@ -2,11 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from .models import Agenda
 from .serializers import AgendaSerializer
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema  # Correct
 from django.db.models import Q
-from datetime import datetime
-import pytz
+from django.utils import timezone # Import timezone
 
 class AgendaViewSet(viewsets.ModelViewSet):
     """
@@ -14,14 +12,14 @@ class AgendaViewSet(viewsets.ModelViewSet):
     """
     queryset = Agenda.objects.all()
     serializer_class = AgendaSerializer
-    
+
     @swagger_auto_schema(
         operation_description="Lista todas as agendas disponíveis",
         responses={200: AgendaSerializer(many=True)}
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-    
+
     @swagger_auto_schema(
         operation_description="Retorna os detalhes de uma agenda específica",
         responses={
@@ -31,7 +29,7 @@ class AgendaViewSet(viewsets.ModelViewSet):
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
-    
+
     @swagger_auto_schema(
         operation_description="Cria uma nova agenda, garantindo que as datas estejam corretas",
         request_body=AgendaSerializer,
@@ -49,7 +47,7 @@ class AgendaViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
+
     @swagger_auto_schema(
         operation_description="Permite atualização completa de uma agenda",
         request_body=AgendaSerializer,
@@ -61,7 +59,7 @@ class AgendaViewSet(viewsets.ModelViewSet):
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
-    
+
     @swagger_auto_schema(
         operation_description="Permite atualização parcial, incluindo o estado da agenda",
         request_body=AgendaSerializer(partial=True),
@@ -79,12 +77,12 @@ class AgendaViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        
+
         if getattr(instance, '_prefetched_objects_cache', None):
             instance._prefetched_objects_cache = {}
-            
+
         return Response(serializer.data)
-    
+
     @swagger_auto_schema(
         operation_description="Remove uma agenda",
         responses={
@@ -94,21 +92,19 @@ class AgendaViewSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-    
+
     def get_queryset(self):
-           queryset = Agenda.objects.all()
-           date_str = self.request.query_params.get('date', None)
-           if date_str:
-               try:
-                   # Converte a string de data para um objeto datetime
-                   date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-                   date_obj = pytz.timezone('America/Sao_Paulo').localize(date_obj)
-                   
-                   # Filtra agendas para este dia
-                   queryset = queryset.filter(
-                       Q(dataInicio__date=date_obj.date()) | 
-                       Q(dataFim__date=date_obj.date())
-                   )
-               except ValueError:
-                   pass  # Ignora datas em formato inválido
-           return queryset
+        queryset = Agenda.objects.all()
+        date_str = self.request.query_params.get('date', None)
+        if date_str:
+            try:
+                # Use timezone.make_aware to handle timezones correctly
+                date_obj = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+                aware_datetime = timezone.make_aware(timezone.datetime.combine(date_obj, timezone.datetime.min.time()))
+                queryset = queryset.filter(
+                    Q(dataInicio__date=aware_datetime.date()) |
+                    Q(dataFim__date=aware_datetime.date())
+                )
+            except ValueError:
+                pass  # Ignore invalid date formats
+        return queryset
