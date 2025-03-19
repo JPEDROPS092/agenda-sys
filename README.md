@@ -1,4 +1,5 @@
 # 🗓️ Agendas - Sistema de Gerenciamento de Agendas
+![image](https://github.com/user-attachments/assets/17b26e04-fac3-467a-b3bb-342982690f6a)
 
 [![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=green)](https://www.djangoproject.com/)
 [![Django REST Framework](https://img.shields.io/badge/DRF-red?style=for-the-badge&logo=djanog&logoColor=white)](https://www.django-rest-framework.org/)
@@ -140,11 +141,10 @@ A maneira mais simples e rápida de executar o projeto é usando o Docker Compos
 1. **Clone o Repositório:**
 
    ```bash
-   git clone <URL_DO_SEU_REPOSITORIO>
-   cd <NOME_DA_PASTA_DO_PROJETO>
+   git clone (https://github.com/JPEDROPS092/agenda-sys)
    ```
 
-   Substitua `<URL_DO_SEU_REPOSITORIO>` pela URL do seu repositório Git e `<NOME_DA_PASTA_DO_PROJETO>` pelo nome da pasta onde o projeto foi clonado.
+   
 2. **Construa e Inicie os Containers:**
 
    ```bash
@@ -182,21 +182,22 @@ Se você preferir executar o projeto *diretamente* na sua máquina (sem Docker),
 2. **Clone o Repositório:**
 
    ```bash
-   git clone <URL_DO_SEU_REPOSITORIO>
-   cd <NOME_DA_PASTA_DO_PROJETO>/agendas-api
+   git clone (https://github.com/JPEDROPS092/agenda-sys)
    ```
 3. **Crie e Ative um Ambiente Virtual:**
 
    ```bash
+   cd agendas-api
    python3 -m venv venv  # Cria o ambiente virtual (pasta 'venv')
    source venv/bin/activate  # Ativa o ambiente virtual (Linux/macOS)
    # venv\Scripts\activate  # Ativa o ambiente virtual (Windows)
    ```
 
    Usar um ambiente virtual é *altamente recomendado* para isolar as dependências do projeto e evitar conflitos com outras bibliotecas instaladas no seu sistema.
-4. **Instale as Dependências:**
+4. **Instale as Dependências(backend):**
 
    ```bash
+   cd agendas-api
    pip install -r requirements.txt
    ```
 5. **Execute as Migrações:**
