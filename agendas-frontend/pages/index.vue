@@ -1,6 +1,16 @@
 <template>
-  <div class="bg-gray-100 min-h-screen">
+  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
     <div class="container py-8 mx-auto px-4">
+      <!-- Dark mode toggle -->
+      <div class="flex justify-end mb-4">
+        <Button @click="toggleDarkMode" variant="outline" class="gap-2">
+          <Icon :name="isDarkMode ? 'lucide:sun' : 'lucide:moon'" class="h-4 w-4" />
+          {{ isDarkMode ? 'Modo Claro' : 'Modo Escuro' }}
+        </Button>
+      </div>
+      <!-- Search and Filter -->
+      <SearchAndFilter @filter="handleFilter" />
+
       <!-- Header com estatísticas -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card class="shadow-lg">
@@ -59,6 +69,15 @@
         </Button>
       </div>
 
+      <!-- Calendar View -->
+      <Calendar 
+        :agendas="filteredAgendas" 
+        class="mb-8"
+        @event-click="handleCalendarEventClick"
+        @date-click="handleCalendarDateClick"
+      />
+
+      <!-- List View -->
       <Card class="shadow-lg">
         <CardContent class="pt-6">
           <div v-if="loading" class="flex justify-center p-8">
@@ -197,7 +216,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
 import type { Agenda } from '~/types/agenda'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -222,7 +242,6 @@ import { useAgendaApi } from '~/composables/useApi'
 import { format, parseISO, parse } from 'date-fns'; // Import parseISO and parse
 import { useRouter } from 'vue-router';
 
-
 const router = useRouter(); // Use useRouter for navigation
 const { toast } = useToast()
 const { getAgendas, deleteAgenda } = useAgendaApi()
@@ -236,6 +255,55 @@ const loading = ref(true)
 const isDeleteDialogOpen = ref(false)
 const selectedAgenda = ref<Agenda | null>(null)
 const deleteLoading = ref(false)
+
+// Dark mode
+const isDarkMode = useLocalStorage('darkMode', false)
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value
+  document.documentElement.classList.toggle('dark', isDarkMode.value)
+}
+
+// Search and filter
+const searchFilters = ref({
+  query: '',
+  status: '',
+  date: ''
+})
+
+const filteredAgendas = computed(() => {
+  return agendas.value.filter(agenda => {
+    const matchesQuery = !searchFilters.value.query ||
+      agenda.titulo.toLowerCase().includes(searchFilters.value.query.toLowerCase()) ||
+      agenda.descricao.toLowerCase().includes(searchFilters.value.query.toLowerCase())
+    
+    const matchesStatus = !searchFilters.value.status || agenda.estadoAtualAgenda === searchFilters.value.status
+    
+    const matchesDate = !searchFilters.value.date ||
+      agenda.dataInicio.startsWith(searchFilters.value.date)
+    
+    return matchesQuery && matchesStatus && matchesDate
+  })
+})
+
+// Calendar handlers
+const handleCalendarEventClick = (event: any) => {
+  const agenda = agendas.value.find(a => a.id === event.id)
+  if (agenda) {
+    navigateTo(`/edit/${agenda.id}`)
+  }
+}
+
+const handleCalendarDateClick = (date: Date) => {
+  navigateTo('/create', {
+    query: {
+      date: date.toISOString().split('T')[0]
+    }
+  })
+}
+
+const handleFilter = (filters: any) => {
+  searchFilters.value = filters
+}
 
 // Paginação
 const nextPage = ref<string | null>(null)

@@ -10,7 +10,9 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/tailwindcss',
-    '@nuxt/icon'
+    '@nuxt/icon',
+    '@vueuse/nuxt',
+    '@schedule-x/vue/nuxt'
   ],
 
   css: [
@@ -26,6 +28,12 @@ export default defineNuxtConfig({
         ignore: ['**/*/index.ts'] // Ignora os arquivos index.ts
       }
     ]
+  },
+
+  colorMode: {
+    classSuffix: '',
+    preference: 'system',
+    fallback: 'light'
   },
 
   app: {

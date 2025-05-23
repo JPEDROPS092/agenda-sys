@@ -45,7 +45,10 @@ Este sistema oferece um conjunto completo de recursos para gerenciar agendas de 
     * **Edição de Agendas:**  Edite todos os campos de uma agenda existente.
     * **Exclusão de Agendas:**  Exclua agendas com segurança, com uma etapa de confirmação para evitar exclusões acidentais.
     * **Alteração de Estado:**  Altere o estado de uma agenda (Recebido, Confirmado, Atendido, Cancelado) de forma simples e direta.
-    * **Calendário Interativo:** Visualize e crie novos agendamentos em um calendário.
+    * **Calendário Interativo:** Visualize e crie novos agendamentos em um calendário com suporte a visualização em mês, semana e dia.
+    * **Busca e Filtros:** Pesquise e filtre agendas por texto, status e data.
+    * **Sistema de Notificações:** Receba notificações sobre eventos importantes e ações realizadas no sistema.
+    * **Modo Escuro:** Alterne entre temas claro e escuro para melhor conforto visual.
 * **Infraestrutura (Docker):**
 
   * **Conteinerização Completa:**  A aplicação é totalmente conteinerizada com Docker e Docker Compose, o que significa que você pode executá-la em *qualquer* ambiente que suporte Docker, com *apenas um comando*!  Isso elimina problemas de dependências e configurações, garantindo que a aplicação funcione da mesma forma em qualquer lugar.
@@ -407,17 +410,18 @@ Este é um exemplo de backlog, com algumas ideias para expandir e aprimorar o pr
    * [X] Adicionar paginação à listagem de agendas.
    * [X] Adicionar tratamento de erros (ex: exibir mensagens de erro da API).
    * [X] Dockerizar o frontend.
-   * [X] Adicionar calendário.
-   * [ ] **Adicionar Testes Unitários para os Componentes:**  Escrever testes unitários para os componentes Vue, usando bibliotecas como Vue Test Utils ou Jest.
-   * [ ] **Melhorar a Estilização e Responsividade:**  Refinar a estilização da aplicação, garantindo que ela seja totalmente responsiva e visualmente atraente em diferentes tamanhos de tela.
-   * [ ] **Adicionar Funcionalidades de Busca e Filtro:**  Integrar a busca e os filtros implementados no backend ao frontend, permitindo que os usuários pesquisem e filtrem as agendas de forma interativa.
-   * [ ] **Adicionar Notificações:**  Implementar notificações (ex: notificações push, e-mail) para lembrar os usuários sobre suas agendas.
+   * [X] Adicionar calendário com visualização em mês, semana e dia.
+   * [X] Implementar busca e filtros para agendas.
+   * [X] Adicionar sistema de notificações.
+   * [X] Implementar Dark Mode.
+   * [ ] **Adicionar Testes Unitários para os Componentes:**  Escrever testes unitários para os componentes Vue usando Vitest e testes end-to-end usando Cypress.
+   * [ ] **Melhorar a Estilização e Responsividade:**  Continuar refinando a estilização da aplicação, garantindo que ela seja totalmente responsiva e visualmente atraente em diferentes tamanhos de tela.
    * [ ] **Adicionar Loading Skeletons/Spinners**: Exibir indicadores de carregamento (skeletons ou spinners) enquanto os dados estão sendo buscados da API, melhorando a experiência do usuário.
    * [ ] **Adicionar um componente para lidar com a visualização e upload dos arquivos** Adicionar a capacidade de visualizar e fazer upload de arquivos no frontend, conectando-o ao backend para armazenamento e recuperação.
    * [ ] **Internacionalização (i18n):**  Tornar a aplicação multi-idioma, usando bibliotecas como `vue-i18n` ou `nuxt-i18n`.
    * [ ] **Implementar PWA**: Transformar o frontend em um Progressive Web App (PWA) para oferecer uma experiência mais nativa, com funcionalidades offline e notificações push.
-   * [ ] **Dark Mode**: Implementar um tema escuro para a aplicação, melhorando a acessibilidade e a experiência do usuário em ambientes com pouca luz.
    * [ ] **Acessibilidade (a11y):**  Garantir que a aplicação seja acessível para pessoas com deficiência, seguindo as diretrizes WCAG.
+   * [ ] **Implementar Cache e Otimização de Performance:**  Adicionar cache no lado do cliente e servidor para melhorar o desempenho da aplicação.
 3. **Integração:**
 
    * [X] Criar arquivo `docker-compose.yml` para orquestrar backend e frontend.
