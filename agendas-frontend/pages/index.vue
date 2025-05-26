@@ -265,24 +265,16 @@ const toggleDarkMode = () => {
 
 // Search and filter
 const searchFilters = ref({
-  query: '',
-  status: '',
-  date: ''
+  search: '',
+  estado: '',
+  date: '',
+  start_date: '',
+  end_date: ''
 })
 
+// We now use the API's filtering capabilities instead of client-side filtering
 const filteredAgendas = computed(() => {
-  return agendas.value.filter(agenda => {
-    const matchesQuery = !searchFilters.value.query ||
-      agenda.titulo.toLowerCase().includes(searchFilters.value.query.toLowerCase()) ||
-      agenda.descricao.toLowerCase().includes(searchFilters.value.query.toLowerCase())
-    
-    const matchesStatus = !searchFilters.value.status || agenda.estadoAtualAgenda === searchFilters.value.status
-    
-    const matchesDate = !searchFilters.value.date ||
-      agenda.dataInicio.startsWith(searchFilters.value.date)
-    
-    return matchesQuery && matchesStatus && matchesDate
-  })
+  return agendas.value
 })
 
 // Calendar handlers
@@ -301,8 +293,10 @@ const handleCalendarDateClick = (date: Date) => {
   })
 }
 
-const handleFilter = (filters: any) => {
+const handleFilter = async (filters: any) => {
   searchFilters.value = filters
+  currentPage.value = 1 // Reset to first page when applying filters
+  await fetchAgendas() // Fetch agendas with the new filters
 }
 
 // Paginação
@@ -318,7 +312,8 @@ onMounted(async () => {
 const fetchAgendas = async () => {
   loading.value = true;
   try {
-    const response = await getAgendas();
+    // Use the search filters when fetching agendas
+    const response = await getAgendas(searchFilters.value);
 
     if (response && response.results && Array.isArray(response.results)) {
       agendas.value = response.results;
@@ -441,39 +436,47 @@ const fetchPage = async (url: string | null) => {
   loading.value = true
 
   try {
-    // Extrair o número da página da URL
+    // Extract the page number from the URL
     const urlObj = new URL(url)
     const page = urlObj.searchParams.get('page')
     if (page) {
-      currentPage.value = parseInt(page, 10) // Specify radix 10
+      currentPage.value = parseInt(page, 10)
     }
-
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error('Erro ao buscar página')
+    
+    // Instead of using the URL directly, we'll rebuild it with our current filters
+    // This ensures we maintain all filters when navigating between pages
+    const { getAgendas } = useAgendaApi()
+    
+    // Create a new filters object that includes the page number
+    const filtersWithPage = { 
+      ...searchFilters.value,
+      page: page || '1'
     }
-
-    const data = await response.json()
-      if (data && data.results && Array.isArray(data.results)) {
-        agendas.value = data.results;
-        nextPage.value = data.next;
-        previousPage.value = data.previous;
+    
+    const response = await getAgendas(filtersWithPage)
+    
+    if (response && response.results && Array.isArray(response.results)) {
+      agendas.value = response.results
+      nextPage.value = response.next
+      previousPage.value = response.previous
+      
+      if (response.count) {
+        totalPages.value = Math.ceil(response.count / 10)
       }
-       else if (data.error){
-        // Handle API errors
-        toast({
-          title: 'Erro',
-          description: data.error,
-          variant: 'destructive',
-        });
+    } else if (response.error) {
+      // Handle API errors
+      toast({
+        title: 'Erro',
+        description: response.error,
+        variant: 'destructive',
+      })
+    } else {
+      toast({
+        title: 'Erro',
+        description: 'Resposta da API em formato inesperado.',
+        variant: 'destructive',
+      })
     }
-      else {
-        toast({
-          title: 'Erro',
-          description: 'Resposta da API em formato inesperado.',
-          variant: 'destructive',
-        });
-      }
 
   } catch (error) {
     console.error('Erro ao buscar página:', error)

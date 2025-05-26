@@ -14,10 +14,18 @@ services:
       - DJANGO_SETTINGS_MODULE=core.settings
       - SECRET_KEY=django-insecure-%&5ltq@gu89itaj&#_3xv%g7p%qtx7i2yk2ccv^%9%0mi9x#v1
       - DEBUG=True
+      - ALLOWED_HOSTS=*
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/agendas/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     command: >
       sh -c "
         python manage.py migrate &&
-        python manage.py populate_agenda &&
+        python manage.py populate_agenda 50 &&
         python manage.py runserver 0.0.0.0:8000
       "
     restart: unless-stopped
@@ -28,42 +36,57 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./agendas-frontend:/app
-      - /app/node_modules
+      # Volumes nomeados para preservar permissões
+      - frontend_node_modules:/app/node_modules
+      - frontend_output:/app/.output
+      - frontend_nuxt:/app/.nuxt
     ports:
       - "3000:3000"
     environment:
       - NUXT_PUBLIC_API_BASE=http://localhost:8000/api
       - NUXT_HOST=0.0.0.0
       - NUXT_PORT=3000
+      # Variáveis de ambiente para solucionar o problema do Preact/Signals
+      - VITE_CJS_IGNORE_WARNING=true
+      - NODE_OPTIONS=--max-old-space-size=4096
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     command: npm run dev -- --host 0.0.0.0
     restart: unless-stopped
 
   access_links:
     image: alpine:latest
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
     command: >
       sh -c "
         apk add --no-cache curl &&
-        echo '╔═════════════════════════════════════════════════════════════╗' &&
+        echo '╜════════════════════════════════════════════════════════════╝' &&
         echo '║                AGENDA SYSTEM - INFORMAÇÕES                  ║' &&
-        echo '╠═════════════════════════════════════════════════════════════╣' &&
+        echo '╞════════════════════════════════════════════════════════════╡' &&
         echo '║                                                             ║' &&
-        echo '║  ✨ APLICAÇÃO INICIADA COM SUCESSO!                         ║' &&
+        echo '║  ✨ APLICAÇÃO FINALIZADA COM SUCESSO!                      ║' &&
         echo '║                                                             ║' &&
         echo '║  📱 Frontend: http://localhost:3000                         ║' &&
         echo '║  ⚙️ API: http://localhost:8000/api/                          ║' &&
         echo '║  📚 Swagger: http://localhost:8000/swagger/                 ║' &&
         echo '║  📖 Redoc: http://localhost:8000/redoc/                     ║' &&
         echo '║                                                             ║' &&
+        echo '║  📈 NOVOS RECURSOS:                                        ║' &&
+        echo '║  • Filtros avançados por data, status e texto                ║' &&
+        echo '║  • Calendário com visualização em mês, semana e dia         ║' &&
+        echo '║  • Melhor validação de formulários                         ║' &&
+        echo '║  • Interface administrativa aprimorada                      ║' &&
+        echo '║                                                             ║' &&
         echo '║  ❓ Problemas com requisições PUT/POST?                     ║' &&
         echo '║  Certifique-se de enviar datas no formato:                  ║' &&
         echo '║  YYYY-MM-DDThh:mm:ssZ (exemplo: 2025-03-14T15:30:00Z)       ║' &&
         echo '║                                                             ║' &&
-        echo '╚═════════════════════════════════════════════════════════════╝' &&
+        echo '╚════════════════════════════════════════════════════════════╝' &&
         echo 'Logs do sistema abaixo:' &&
         echo '' &&
         tail -f /dev/null
@@ -71,3 +94,6 @@ services:
 
 volumes:
   backend_data:
+  frontend_node_modules:
+  frontend_output:
+  frontend_nuxt:

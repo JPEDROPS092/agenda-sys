@@ -1,10 +1,12 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from .models import Agenda
 from .serializers import AgendaSerializer
-from drf_yasg.utils import swagger_auto_schema  # Correct
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from django.db.models import Q
-from django.utils import timezone # Import timezone
+from django.utils import timezone
 
 class AgendaViewSet(viewsets.ModelViewSet):
     """
@@ -95,10 +97,11 @@ class AgendaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Agenda.objects.all()
+        
+        # Filter by date
         date_str = self.request.query_params.get('date', None)
         if date_str:
             try:
-                # Use timezone.make_aware to handle timezones correctly
                 date_obj = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
                 aware_datetime = timezone.make_aware(timezone.datetime.combine(date_obj, timezone.datetime.min.time()))
                 queryset = queryset.filter(
@@ -107,4 +110,76 @@ class AgendaViewSet(viewsets.ModelViewSet):
                 )
             except ValueError:
                 pass  # Ignore invalid date formats
+        
+        # Filter by estado (status)
+        estado = self.request.query_params.get('estado', None)
+        if estado:
+            queryset = queryset.filter(estadoAtualAgenda=estado)
+        
+        # Filter by search term (in titulo or descricao)
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                Q(titulo__icontains=search) |
+                Q(descricao__icontains=search) |
+                Q(local__icontains=search)
+            )
+            
+        # Filter by date range
+        start_date = self.request.query_params.get('start_date', None)
+        end_date = self.request.query_params.get('end_date', None)
+        
+        if start_date:
+            try:
+                start_date_obj = timezone.datetime.strptime(start_date, '%Y-%m-%d').date()
+                start_datetime = timezone.make_aware(timezone.datetime.combine(start_date_obj, timezone.datetime.min.time()))
+                queryset = queryset.filter(dataInicio__gte=start_datetime)
+            except ValueError:
+                pass
+                
+        if end_date:
+            try:
+                end_date_obj = timezone.datetime.strptime(end_date, '%Y-%m-%d').date()
+                end_datetime = timezone.make_aware(timezone.datetime.combine(end_date_obj, timezone.datetime.max.time()))
+                queryset = queryset.filter(dataFim__lte=end_datetime)
+            except ValueError:
+                pass
+                
         return queryset
+        
+    @swagger_auto_schema(
+        method='patch',
+        operation_description="Atualiza o estado de uma agenda",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['estadoAtualAgenda'],
+            properties={
+                'estadoAtualAgenda': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['RECEBIDO', 'CONFIRMADO', 'ATENDIDO', 'CANCELADO']
+                )
+            }
+        ),
+        responses={
+            200: AgendaSerializer(),
+            400: "Estado inválido",
+            404: "Agenda não encontrada"
+        }
+    )
+    @action(detail=True, methods=['patch'], url_path='estado')
+    def update_estado(self, request, pk=None):
+        """Endpoint especial para atualizar apenas o estado da agenda."""
+        instance = self.get_object()
+        estado = request.data.get('estadoAtualAgenda')
+        
+        if not estado or estado not in dict(Agenda.ESTADO_CHOICES).keys():
+            return Response(
+                {"error": "Estado inválido. Deve ser um dos seguintes: RECEBIDO, CONFIRMADO, ATENDIDO, CANCELADO"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        instance.estadoAtualAgenda = estado
+        instance.save()
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)

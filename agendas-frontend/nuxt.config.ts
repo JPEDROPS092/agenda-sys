@@ -11,9 +11,34 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxt/icon',
-    '@vueuse/nuxt',
-    '@schedule-x/vue/nuxt'
+    '@vueuse/nuxt'
   ],
+  
+  // Configuração explícita para resolver conflito de dependências
+  vite: {
+    optimizeDeps: {
+      include: [
+        '@preact/signals',
+        'preact',
+        '@schedule-x/calendar',
+        '@schedule-x/vue'
+      ],
+      exclude: []
+    },
+    resolve: {
+      dedupe: ['vue', '@preact/signals', 'preact']
+    },
+    build: {
+      commonjsOptions: {
+        transformMixedEsModules: true,
+        include: [/node_modules/]
+      }
+    }
+  },
+  
+  vueuse: {
+    ssrHandlers: true,
+  },
 
   css: [
     '@/assets/css/globals.css'

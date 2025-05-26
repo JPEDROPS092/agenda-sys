@@ -7,15 +7,37 @@ export function useAgendaApi() {
   const baseUrl = config.public.apiBase
   const loading = ref(false)
 
-  const getAgendas = async (): Promise<ApiResponse<Agenda[]>> => { 
+  const getAgendas = async (filters?: Record<string, string>): Promise<ApiResponse<Agenda[]>> => { 
     loading.value = true
     try {
-      const response = await fetch(`${baseUrl}/agendas/`)
+      // Build URL with query parameters for filtering
+      let url = `${baseUrl}/agendas/`
+      
+      if (filters) {
+        const params = new URLSearchParams()
+        
+        // Add each non-empty filter to the query parameters
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value) {
+            params.append(key, value)
+          }
+        })
+        
+        // Append query parameters to the URL if there are any
+        const queryString = params.toString()
+        if (queryString) {
+          url += `?${queryString}`
+        }
+      }
+      
+      console.log('Fetching agendas with URL:', url)
+      
+      const response = await fetch(url)
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Falha ao buscar agendas')
       }
-      return await response.json() as Promise<ApiResponse<Agenda[]>>; // Corrected type cast
+      return await response.json() as ApiResponse<Agenda[]>
     } catch (error) {
       console.error('Erro ao buscar agendas:', error)
       const errorMessage = error instanceof Error ? error.message : 'Falha ao buscar agendas'

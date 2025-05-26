@@ -1,15 +1,25 @@
-FROM node:18-slim
+FROM node:20-slim
 
+# Criar diretório da aplicação
 WORKDIR /app
 
 # Copia package.json e package-lock.json para aproveitar cache de camadas
 COPY package*.json ./
 
-# Instala todas as dependências, incluindo as de desenvolvimento
-RUN npm install --legacy-peer-deps
+# Instala as dependências
+RUN npm install
 
 # Copia o resto dos arquivos
 COPY . .
+
+# Limpa qualquer diretório .output existente e cria um novo com permissões adequadas
+RUN rm -rf ./.output && \
+    mkdir -p ./.output && \
+    mkdir -p ./.output/public && \
+    chmod -R 777 ./.output && \
+    mkdir -p ./.nuxt && \
+    chmod -R 777 ./.nuxt && \
+    chmod -R 777 ./node_modules
 
 # Expõe a porta de desenvolvimento do Nuxt
 EXPOSE 3000

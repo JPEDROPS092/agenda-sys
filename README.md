@@ -129,6 +129,7 @@ Este projeto foi construído com um conjunto de tecnologias modernas e robustas,
 
   * ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) **Docker:** Uma plataforma para conteinerizar aplicações, empacotando o código e suas dependências em um "container" isolado, garantindo que a aplicação funcione da mesma forma em qualquer ambiente.
   * **Docker Compose:** Uma ferramenta para definir e gerenciar aplicações multi-container, facilitando a orquestração do backend, frontend e banco de dados.
+  * **Volumes Nomeados:** Utilização de volumes nomeados para preservar permissões em diretórios críticos como `node_modules`, `.nuxt` e `.output`, evitando problemas comuns de permissão em ambientes Docker.
 
 ## ⚙️ Pré-requisitos: O Que Você Precisa
 
